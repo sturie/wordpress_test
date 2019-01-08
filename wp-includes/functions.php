@@ -1101,7 +1101,7 @@ function wp( $query_vars = '' ) {
  * @since 2.3.0
  * @since 3.9.0 Added status codes 418, 428, 429, 431, and 511.
  * @since 4.5.0 Added status codes 308, 421, and 451.
- * @since 5.0.0 Added status code 103.
+ * @since 5.1.0 Added status code 103.
  *
  * @global array $wp_header_to_desc
  *
@@ -2569,8 +2569,35 @@ function wp_check_filetype_and_ext( $file, $filename, $mimes = null ) {
 			 * This means that common mismatches are forgiven: application/vnd.apple.numbers is often misidentified as application/zip,
 			 * and some media files are commonly named with the wrong extension (.mov instead of .mp4)
 			 */
-
 			if ( substr( $real_mime, 0, strcspn( $real_mime, '/' ) ) !== substr( $type, 0, strcspn( $type, '/' ) ) ) {
+				$type = $ext = false;
+			}
+		} elseif ( 'text/plain' === $real_mime ) {
+			// A few common file types are occasionally detected as text/plain; allow those.
+			if ( ! in_array(
+				$type,
+				array(
+					'text/plain',
+					'text/csv',
+					'text/richtext',
+					'text/tsv',
+					'text/vtt',
+				)
+			)
+			) {
+				$type = $ext = false;
+			}
+		} elseif ( 'text/rtf' === $real_mime ) {
+			// Special casing for RTF files.
+			if ( ! in_array(
+				$type,
+				array(
+					'text/rtf',
+					'text/plain',
+					'application/rtf',
+				)
+			)
+			) {
 				$type = $ext = false;
 			}
 		} else {
@@ -6209,7 +6236,7 @@ function wp_is_uuid( $uuid, $version = null ) {
  * with the optional prefix. As such the returned value is not universally unique,
  * but it is unique across the life of the PHP process.
  *
- * @since 4.9.9
+ * @since 5.0.3
  *
  * @staticvar int $id_counter
  *
